@@ -44,36 +44,36 @@ on:
   push:
     branches:
       - main
-      - correcoes
+      - action
   pull_request:
     branches:
       - main
-      - correcores
-  workflow_dispatch:  # Permite rodar manualmente no GitHub Actions
+      - action
+  workflow_dispatch:
 
 jobs:
   cypress:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        container: [1, 2, 3, 4]  # Número de instâncias paralelas (ajuste conforme necessário)
+        container: [1, 2, 3, 4]  # Número de instâncias paralelas
 
     steps:
       - name: 📥 Checkout do código
         uses: actions/checkout@v3
 
       - name: 🏗️ Instalar dependências
-        run: npm ci
+        run: npm ci  # Instala todas as dependências corretamente
 
-      - name: 🔍 Listar arquivos de teste (debug)
+      - name: 🔍 Debug - Listar arquivos do Cypress
         run: ls -R cypress/e2e/
 
-      - name: 🏃 Rodar Cypress (Container ${{ matrix.container }})
+      - name: 🏃 Rodar Cypress no modo headless (Container ${{ matrix.container }})
         run: |
           SPECS=$(node scripts/split-specs.js ${{ matrix.container }} 4)
           echo "Rodando os seguintes testes: $SPECS"
           if [ -n "$SPECS" ]; then
-            npx cypress run --spec "$SPECS"
+            npx cypress run --headless --spec "$SPECS"
           else
             echo "Nenhum teste para este runner, finalizando..."
             exit 0
