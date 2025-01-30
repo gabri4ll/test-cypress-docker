@@ -1,19 +1,19 @@
-name: Cypress Tests using Cypress Docker Image
+# name: Cypress Tests using Cypress Docker Image
 
-on: push
+# on: push
 
-jobs:
-  cypress:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        worker: [0, 1, 2] # Três workers
+# jobs:
+#   cypress:
+#     runs-on: ubuntu-latest
+#     strategy:
+#       matrix:
+#         worker: [0, 1, 2] # Três workers
 
-    steps:
-      - uses: actions/checkout@v3
-      - uses: cypress-io/github-action@v5
-        with:
-          command: npx cypress run --spec $(node split-specs.js)
-        env:
-          WORKER_INDEX: ${{ matrix.worker }}
-          WORKERS: 3
+#     steps:
+#       - uses: actions/checkout@v3
+#       - uses: cypress-io/github-action@v5
+#         with:
+#           command: npx cypress run --spec $(node split-specs.js)
+#         env:
+#           WORKER_INDEX: ${{ matrix.worker }}
+#           WORKERS: 3
