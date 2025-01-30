@@ -62,10 +62,17 @@ jobs:
       - name: 📥 Checkout do código
         uses: actions/checkout@v3
 
-      - name: 🏗️ Instalar dependências
-        run: npm ci  # Instala todas as dependências corretamente
+      - name: 🗑 Limpar cache e reinstalar dependências
+        run: |
+          rm -rf node_modules package-lock.json
+          npm cache clean --force
+          npm install
+          npx cypress install  # Garante que Cypress seja baixado
 
-      - name: 🔍 Debug - Listar arquivos do Cypress
+      - name: 🔍 Debug - Verificar instalação do Cypress
+        run: npx cypress version
+
+      - name: 🔍 Debug - Listar arquivos de teste
         run: ls -R cypress/e2e/
 
       - name: 🏃 Rodar Cypress no modo headless (Container ${{ matrix.container }})
