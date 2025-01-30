@@ -59,31 +59,18 @@ jobs:
         container: [1, 2, 3, 4]  # Número de instâncias paralelas
 
     steps:
-      - name: 📥 Checkout do código
-        uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: 🗑 Limpar cache e reinstalar dependências
-        run: |
-          rm -rf node_modules package-lock.json
-          npm cache clean --force
-          npm install
-          npx cypress install  # Garante que Cypress seja baixado
+      - name: Download the build folder
+        uses: actions/download-artifact@v4
+        with:
+          name: build
 
-      - name: 🔍 Debug - Verificar instalação do Cypress
-        run: npx cypress version
-
-      - name: 🔍 Debug - Listar arquivos de teste e `cypress.config.js`
-        run: |
-          ls -R cypress/
-          cat cypress.config.js || echo "Arquivo cypress.config.js não encontrado"
-
-      - name: 🏃 Rodar Cypress no modo headless (Container ${{ matrix.container }})
-        run: |
-          SPECS=$(node scripts/split-specs.js ${{ matrix.container }} 4)
-          echo "Rodando os seguintes testes: $SPECS"
-          if [ -n "$SPECS" ]; then
-            npx cypress run --headless --config-file cypress.config.js --spec "$SPECS"
-          else
-            echo "Nenhum teste para este runner, finalizando..."
-            exit 0
-          fi
+      - name: Cypress run
+        uses: cypress-io/github-action@v6
+        with:
+          record: true
+          parallel: true
+          group: 'UI-Chrome'
+          start: npm start
