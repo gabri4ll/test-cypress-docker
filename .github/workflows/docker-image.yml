@@ -1,44 +1,4 @@
-# name: Run Cypress Tests in Docker
-
-# on:
-#   push:
-#     branches:
-#       - main
-#       - correcoes
-#   pull_request:
-#     branches:
-#       - main
-#       - correcores
-#   workflow_dispatch:  # Permite rodar manualmente no GitHub Actions
-
-# jobs:
-#   test:
-#     runs-on: ubuntu-latest
-#     strategy:
-#       matrix:
-#         container: [1, 2, 3]  # Define 3 containers para rodar em paralelo
-
-#     steps:
-#       - name: 📥 Checkout do código
-#         uses: actions/checkout@v3
-
-#       - name: 🐳 Configurar Docker Buildx
-#         uses: docker/setup-buildx-action@v2
-
-#       - name: 🏗️ Construir a imagem Docker
-#         run: docker build -t cypress-tests .
-
-#       - name: 🏃 Executar Cypress no Docker
-#         run: |
-#           SPECS=$(node scripts/split-specs.js ${{ matrix.container }} 3)
-#           if [ -n "$SPECS" ]; then
-#             docker run --rm cypress-tests --spec "$SPECS"
-#           else
-#             echo "Nenhum teste para este container, finalizando..."
-#             exit 0
-#           fi
-
-name: Run Cypress in Parallel (No Dashboard)
+name: Run Cypress Tests in Docker
 
 on:
   push:
@@ -48,62 +8,32 @@ on:
   pull_request:
     branches:
       - main
-      - correcoes
-  workflow_dispatch:
+      - correcores
+  workflow_dispatch:  # Permite rodar manualmente no GitHub Actions
 
 jobs:
-  cypress-run-1:
-    runs-on: ubuntu-20.04
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        container: [1, 2, 3, 4, 5]  # Define 3 containers para rodar em paralelo
+
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      # Install NPM dependencies, cache them correctly
-      # and run all Cypress tests
-      - name: Cypress run
-        uses: cypress-io/github-action@v4
-        with:
-          command: npm run test:batch-1
-  cypress-run-2:
-    runs-on: ubuntu-20.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      # Install NPM dependencies, cache them correctly
-      # and run all Cypress tests
-      - name: Cypress run
-        uses: cypress-io/github-action@v4
-        with:
-          command: npm run test:batch-2
-  cypress-run-3:
-    runs-on: ubuntu-20.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      # Install NPM dependencies, cache them correctly
-      # and run all Cypress tests
-      - name: Cypress run
-        uses: cypress-io/github-action@v4
-        with:
-          command: npm run test:batch-3
-  cypress-run-4:
-    runs-on: ubuntu-20.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      # Install NPM dependencies, cache them correctly
-      # and run all Cypress tests
-      - name: Cypress run
-        uses: cypress-io/github-action@v4
-        with:
-          command: npm run test:batch-4
-  cypress-run-5:
-    runs-on: ubuntu-20.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      # Install NPM dependencies, cache them correctly
-      # and run all Cypress tests
-      - name: Cypress run
-        uses: cypress-io/github-action@v4
-        with:
-          command: npm run test:batch-5
+      - name: 📥 Checkout do código
+        uses: actions/checkout@v3
+
+      - name: 🐳 Configurar Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: 🏗️ Construir a imagem Docker
+        run: docker build -t cypress-tests .
+
+      - name: 🏃 Executar Cypress no Docker
+        run: |
+          SPECS=$(node scripts/split-specs.js ${{ matrix.container }} 5)
+          if [ -n "$SPECS" ]; then
+            docker run --rm cypress-tests --spec "$SPECS"
+          else
+            echo "Nenhum teste para este container, finalizando..."
+            exit 0
+          fi
