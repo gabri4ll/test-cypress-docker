@@ -1,3 +1,7 @@
+name: Cypress Tests using Cypress Docker Image
+
+on: push
+
 jobs:
   cypress:
     runs-on: ubuntu-latest
