@@ -35,4 +35,5 @@ jobs:
             docker run --rm cypress-tests --spec "$SPECS"
           else
             echo "Nenhum teste para este container, finalizando..."
+            exit 0
           fi
