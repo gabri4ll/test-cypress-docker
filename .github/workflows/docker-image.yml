@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - main
+      - correcoes
   pull_request:
     branches:
       - main
+      - correcores
   workflow_dispatch:  # Permite rodar manualmente no GitHub Actions
 
 jobs:
