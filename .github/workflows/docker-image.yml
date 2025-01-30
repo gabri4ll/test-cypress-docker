@@ -1,4 +1,44 @@
-name: Run Cypress Tests in Docker
+# name: Run Cypress Tests in Docker
+
+# on:
+#   push:
+#     branches:
+#       - main
+#       - correcoes
+#   pull_request:
+#     branches:
+#       - main
+#       - correcores
+#   workflow_dispatch:  # Permite rodar manualmente no GitHub Actions
+
+# jobs:
+#   test:
+#     runs-on: ubuntu-latest
+#     strategy:
+#       matrix:
+#         container: [1, 2, 3, 4, 5]  # Define 3 containers para rodar em paralelo
+
+#     steps:
+#       - name: 📥 Checkout do código
+#         uses: actions/checkout@v3
+
+#       - name: 🐳 Configurar Docker Buildx
+#         uses: docker/setup-buildx-action@v2
+
+#       - name: 🏗️ Construir a imagem Docker
+#         run: docker build -t cypress-tests .
+
+#       - name: 🏃 Executar Cypress no Docker
+#         run: |
+#           SPECS=$(node scripts/split-specs.js ${{ matrix.container }} 5)
+#           if [ -n "$SPECS" ]; then
+#             docker run --rm cypress-tests --spec "$SPECS"
+#           else
+#             echo "Nenhum teste para este container, finalizando..."
+#             exit 0
+#           fi
+
+name: Run Cypress in Parallel with Docker
 
 on:
   push:
@@ -8,8 +48,8 @@ on:
   pull_request:
     branches:
       - main
-      - correcores
-  workflow_dispatch:  # Permite rodar manualmente no GitHub Actions
+      - correcoes
+  workflow_dispatch:
 
 jobs:
   build:
@@ -18,40 +58,51 @@ jobs:
       - name: 📥 Checkout do código
         uses: actions/checkout@v3
 
-      - name: 🏗️ Construir a imagem Docker
-        run: docker build -t cypress-tests .
+      - name: 🏗️ Configurar Docker Buildx
+        uses: docker/setup-buildx-action@v2
 
-      - name: 🗄️ Salvar imagem para reuso
-        run: docker save cypress-tests -o cypress-tests.tar
+      - name: 🏗️ Construir a imagem Docker com cache
+        run: |
+          docker buildx build --cache-to=type=local,dest=/tmp/.buildx-cache \
+                              --cache-from=type=local,src=/tmp/.buildx-cache \
+                              -t cypress-tests . --load
 
-      - name: 📤 Upload da imagem para cache
-        uses: actions/upload-artifact@v3
+      - name: 📤 Cache do Buildx
+        uses: actions/cache@v3
         with:
-          name: cypress-docker-image
-          path: cypress-tests.tar
+          path: /tmp/.buildx-cache
+          key: cypress-build-${{ github.sha }}
+          restore-keys: |
+            cypress-build-
 
   test:
     needs: build
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        container: [1, 2, 3, 4, 5]  # Número de containers paralelos
+        container: [1, 2, 3, 4]  # Número de containers paralelos
 
     steps:
       - name: 📥 Checkout do código
         uses: actions/checkout@v3
 
-      - name: 📥 Baixar imagem Docker do cache
-        uses: actions/download-artifact@v3
+      - name: 📥 Restaurar cache do Buildx
+        uses: actions/cache@v3
         with:
-          name: cypress-docker-image
+          path: /tmp/.buildx-cache
+          key: cypress-build-${{ github.sha }}
+          restore-keys: |
+            cypress-build-
 
-      - name: 🔄 Carregar imagem Docker
-        run: docker load -i cypress-tests.tar
+      - name: 🏗️ Configurar Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: 🔄 Carregar imagem Docker a partir do cache
+        run: docker buildx build --cache-from=type=local,src=/tmp/.buildx-cache -t cypress-tests . --load
 
       - name: 🏃 Executar Cypress no Docker (Container ${{ matrix.container }})
         run: |
-          SPECS=$(node scripts/split-specs.js ${{ matrix.container }} 5)
+          SPECS=$(node scripts/split-specs.js ${{ matrix.container }} 4)
           echo "Rodando os seguintes testes: $SPECS"
           if [ -n "$SPECS" ]; then
             docker run --rm cypress-tests --spec "$SPECS"
