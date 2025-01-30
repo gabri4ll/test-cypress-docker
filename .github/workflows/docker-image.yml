@@ -44,12 +44,12 @@ on:
   push:
     branches:
       - main
-      - action
+      - correcoes
   pull_request:
     branches:
       - main
-      - action
-  workflow_dispatch:
+      - correcores
+  workflow_dispatch:  # Permite rodar manualmente no GitHub Actions
 
 jobs:
   cypress:
