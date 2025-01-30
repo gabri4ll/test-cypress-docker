@@ -44,11 +44,11 @@ on:
   push:
     branches:
       - main
-      - action
+      - correcoes
   pull_request:
     branches:
       - main
-      - action
+      - correcoes
   workflow_dispatch:
 
 jobs:
