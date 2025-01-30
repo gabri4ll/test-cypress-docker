@@ -1,0 +1,15 @@
+jobs:
+  cypress:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        worker: [0, 1, 2] # Três workers
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: cypress-io/github-action@v5
+        with:
+          command: npx cypress run --spec $(node split-specs.js)
+        env:
+          WORKER_INDEX: ${{ matrix.worker }}
+          WORKERS: 3
