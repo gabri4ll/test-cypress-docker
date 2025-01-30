@@ -72,15 +72,17 @@ jobs:
       - name: 🔍 Debug - Verificar instalação do Cypress
         run: npx cypress version
 
-      - name: 🔍 Debug - Listar arquivos de teste
-        run: ls -R cypress/e2e/
+      - name: 🔍 Debug - Listar arquivos de teste e `cypress.config.js`
+        run: |
+          ls -R cypress/
+          cat cypress.config.js || echo "Arquivo cypress.config.js não encontrado"
 
       - name: 🏃 Rodar Cypress no modo headless (Container ${{ matrix.container }})
         run: |
           SPECS=$(node scripts/split-specs.js ${{ matrix.container }} 4)
           echo "Rodando os seguintes testes: $SPECS"
           if [ -n "$SPECS" ]; then
-            npx cypress run --headless --spec "$SPECS"
+            npx cypress run --headless --config-file cypress.config.js --spec "$SPECS"
           else
             echo "Nenhum teste para este runner, finalizando..."
             exit 0
