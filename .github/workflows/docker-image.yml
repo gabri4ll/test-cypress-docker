@@ -29,4 +29,10 @@ jobs:
         run: docker build -t cypress-tests .
 
       - name: 🏃 Executar Cypress no Docker
-        run: docker run --rm cypress-tests --spec "$(node scripts/split-specs.js ${{ matrix.container }} 3)"
+        run: |
+          SPECS=$(node scripts/split-specs.js ${{ matrix.container }} 3)
+          if [ -n "$SPECS" ]; then
+            docker run --rm cypress-tests --spec "$SPECS"
+          else
+            echo "Nenhum teste para este container, finalizando..."
+          fi
