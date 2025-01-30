@@ -14,11 +14,9 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-
-    services:
-      docker:
-        image: docker:20.10.14
-        options: --privileged
+    strategy:
+      matrix:
+        container: [1, 2, 3, 4, 5]  # Define 3 containers para rodar em paralelo
 
     steps:
       - name: 📥 Checkout do código
@@ -31,4 +29,11 @@ jobs:
         run: docker build -t cypress-tests .
 
       - name: 🏃 Executar Cypress no Docker
-        run: docker run --rm cypress-tests
+        run: |
+          SPECS=$(node scripts/split-specs.js ${{ matrix.container }} 5)
+          if [ -n "$SPECS" ]; then
+            docker run --rm cypress-tests --spec "$SPECS"
+          else
+            echo "Nenhum teste para este container, finalizando..."
+            exit 0
+          fi
